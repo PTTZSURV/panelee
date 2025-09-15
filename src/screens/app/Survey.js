@@ -49,7 +49,7 @@ export default function Survey() {
     });
 
     useEffect(() => {
-        fetch('https://victonictechnologies.github.io/SurveysDetails/surveys.json')
+        fetch('https://pttzsurv.github.io/eranke/surveys.json')
             .then(response => response.json())
             .then(data => {
                 var dataFilteredSurvey = data.surveys.filter(item => item.surveyId == location.state.Id)
