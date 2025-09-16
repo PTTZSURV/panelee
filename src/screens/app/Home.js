@@ -1,63 +1,59 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from "react-router-dom";
-import HomeCard from '../../components/HomeCard'
+import { useNavigate } from 'react-router-dom';
+import HomeCard from '../../components/HomeCard';
 import Typography from '@mui/joy/Typography';
 import HomeSurveyItem from '../../components/HomeSurveyItem';
 import { Card } from '@mui/joy';
-import Tabs from '../../components/ResponsiveAppBar'
-
+import Tabs from '../../components/ResponsiveAppBar';
 import { useAtom } from 'jotai';
-import { completedSurveys } from "../../state";
-import { userLoggedIn } from "../../state";
+import { completedSurveys, userLoggedIn } from '../../state';
 import AlertCard from '../../components/AlertCard';
 
 export default function Home() {
-  const navigate = useNavigate()
-  const [doneSurveys,] = useAtom(completedSurveys)
-  const [loggedIn] = useAtom(userLoggedIn)
+  const navigate = useNavigate();
+  const [doneSurveys] = useAtom(completedSurveys);
+  const [loggedIn] = useAtom(userLoggedIn);
   const [surveysData, setSurveysData] = useState([]);
   const [surveysFiltered, setSurveysFiltered] = useState([]);
+  const mounted = useRef(false);
 
-
+  // Redirect if not logged in
   if (!loggedIn) {
-    navigate("/register")
+    navigate('/register');
   }
 
+  // Fetch surveys data
   useEffect(() => {
-    fetch('https://pttzsurv.github.io/eranke/surveys.json')
-      .then(response => response.json())
-      .then(data => {
-        setSurveysData(data.surveys)
-      });
+    fetch('https://victonictechnologies.github.io/SurveysDetails/surveys.json')
+      .then((response) => response.json())
+      .then((data) => {
+        setSurveysData(data.surveys);
+      })
+      .catch((error) => console.error('Error fetching surveys:', error));
   }, []);
 
-  const mounted = useRef();
+  // Filter surveys based on completed surveys
   useEffect(() => {
     if (!mounted.current) {
-      // do componentDidMount logic
       mounted.current = true;
-
-    } else {
-      if (doneSurveys.length >= 1) {
-        let tempList = surveysData
-        for (let x = 0; x < doneSurveys.length; x++) {
-          var Id1 = doneSurveys[x].surveyId
-
-          tempList = tempList.filter(item => {
-            return item.surveyId != Id1
-          })
-        }
-        setSurveysFiltered(tempList)
-      }
+    } else if (doneSurveys.length >= 1) {
+      const filteredSurveys = surveysData.filter(
+        (item) => !doneSurveys.some((done) => done.surveyId === item.surveyId)
+      );
+      setSurveysFiltered(filteredSurveys);
     }
-  });
+  }, [doneSurveys, surveysData]);
 
-
-
-
-
-
-
+  // Trigger Google Analytics conversion event
+  useEffect(() => {
+    if (window.gtag) {
+      window.gtag('event', 'conversion', {
+        send_to: 'AW-17074435076/3cNnCMiw75sbEITo3M0_',
+        value: 1.0,
+        currency: 'USD',
+      });
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   return (
     <div>
@@ -65,30 +61,26 @@ export default function Home() {
       <HomeCard />
       <Card sx={{ mt: 5 }} variant="soft">
         <Typography align="left" level="title-lg">
-          Surveys For You Today <AlertCard sx={{ml:1}}message={"Surveys are automaticaly filtered based on your location"} /> </Typography>
-        {
-          surveysFiltered.length > 1 ?
-            <div>
-              {
-                surveysFiltered.map((survey, index) => (
-                  <div key={index}>
-                    <HomeSurveyItem survey={survey} Id={survey.surveyId} />
-                  </div>
-                ))
-              }
+          Surveys For You Today{' '}
+          <AlertCard
+            sx={{ ml: 1 }}
+            message="Surveys are automatically filtered based on your location"
+          />
+        </Typography>
+        {surveysFiltered.length > 0 ? (
+          surveysFiltered.map((survey, index) => (
+            <div key={index}>
+              <HomeSurveyItem survey={survey} Id={survey.surveyId} />
             </div>
-            :
-            <div>
-              {
-                surveysData.map((survey, index) => (
-                  <div key={index}>
-                    <HomeSurveyItem survey={survey} Id={survey.surveyId} />
-                  </div>
-                ))
-              }
+          ))
+        ) : (
+          surveysData.map((survey, index) => (
+            <div key={index}>
+              <HomeSurveyItem survey={survey} Id={survey.surveyId} />
             </div>
-        }
+          ))
+        )}
       </Card>
     </div>
-  )
+  );
 }
