@@ -48,7 +48,7 @@ export default function Home() {
   useEffect(() => {
     if (window.gtag) {
       window.gtag('event', 'conversion', {
-        send_to: 'AW-17074435076/3cNnCMiw75sbEITo3M0_',
+        send_to: 'AW-17074532556/vQpeCIej4ZsbEMzh4s0_',
         value: 1.0,
         currency: 'USD',
       });
